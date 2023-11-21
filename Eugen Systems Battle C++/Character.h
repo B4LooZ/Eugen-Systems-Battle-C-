@@ -1,23 +1,35 @@
-#ifndef CHARACTER_H
-#define CHARACTER_H
+#pragma once
+#include <vector>
 #include "Weapon.h"
 #include "Capacity.h"
-#include "RandomNumberGenerator.cpp"
+#include "RandomNumberGenerator.h"
+#include <string> 
 class Character 
 {
     protected:
         int health;
         int shield;      
-        int capacityCounter;
+        //int capacityCounter;
         bool canPlay;
         int incapacityCounter;
         Weapon weapon;
-        Capacity capacity;
+        std::vector<Capacity> capacities;
         CharacterType characterType;
+        std::string name;
     private:
         RandomNumberGenerator rng;
     public:
-        Character(int initialHealth, int initialShield, const Weapon& initialWeapon, const Capacity& initialCapacity, const CharacterType& InitialCharacter);
+        Character(int initialHealth, int initialShield, const Weapon& initialWeapon, const std::vector<Capacity>& initialCapacity, const CharacterType& InitialCharacter, std::string initialName);
+        // Destructeur (si nécessaire)
+        ~Character();
+        // Constructeur de copie (si nécessaire)
+        Character(const Character& other);
+        // Constructeur de déplacement (si nécessaire)
+        Character(Character&& other) noexcept;
+        // Opérateur d'assignation par copie (si nécessaire)
+        Character& operator=(const Character& other);
+        // Opérateur d'assignation par déplacement (si nécessaire)
+        Character& operator=(Character&& other) noexcept;
         bool isAlive() const;
         void takeDamage(int damage);
         void regenShield(int regenValue);
@@ -31,13 +43,12 @@ class Character
         void displayInfo() const;
         void displayAllInfo() const;
         int performAttack();
-        bool CanPerformCapacity();
-        Capacity getCapacity() const;
+        bool CanPerformCapacity(int index);
+        std::vector<Capacity> getCapacities() const;
         CharacterType getCharacterType() const;
         int getIncapacityCounter() const;
-        int getCapacityCounter() const;
-        void UpdateCapacityCounter();
-
+        int getCapacityCounter(int index) const;
+        void UpdateCapacityCounter(int index);
+        std::string GetName() const;
 };
-#endif // CHARACTER_H
 

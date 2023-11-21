@@ -1,19 +1,26 @@
-#ifndef BATTLE_H
-#define BATTLE_H
-//#include "Knight.h"
-//#include "Orc.h"
+#pragma once
+#include <memory>
+#include <vector>
+#include <iostream>
+#include <unordered_map>
+#include <conio.h> 
+#include <algorithm>
+
 #include "Character.h"
+// Autres inclusions nécessaires pour Battle
+#include "Struct.h"
+
 class Battle 
 {
     private:
-        Character* knight;
-        Character* orc;
-
-    public:
-        Battle(Character* orc, Character* knight);
+        std::vector<std::unique_ptr<Character>> characteres;
+        bool manualInit;
+    public:       
+        Battle();
+        void Initialisation();
         void startBattle();
-        int doCapacity(Character* fromChara, Character* toChara);
-        int capacityState(Character* fromChara, Character* toChara, bool autoCapacity);
-        void attackState(Character* fromChara, Character* toChara, int currentDamage);
+        void reset();
+        int doCapacity(std::unique_ptr<Character>& fromChara, std::unique_ptr<Character>& toChara);
+        int capacityState(std::unique_ptr<Character>& fromChara, std::unique_ptr<Character>& toChara, bool autoCapacity);
+        void attackState(std::unique_ptr<Character>& fromChara, std::unique_ptr<Character>& toChara, int currentDamage);
 };
-#endif // BATTLE_H

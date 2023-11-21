@@ -1,21 +1,24 @@
-#ifndef ENUMCLASS_H
-#define ENUMCLASS_H
-
+#pragma once
 enum class WeaponType 
 {
     Sword,
     Axe,
-    // Ajoutez d'autres types d'armes au besoin
+    // Ajoutez au besoin
+    Count,   
 };
 enum class CapacityType
 {
     Charge,
     Stun,
+    // Ajoutez au besoin
+    Count,
 };
 enum class CharacterType
 {
     Knight,
     Orc,
+    // Ajoutez au besoin
+    Count,
 };
 class EnumClass 
 {
@@ -26,5 +29,3 @@ class EnumClass
     public:
         static const char* characterTypeToString(CharacterType type);
 };
-
-#endif // ENUMCLASS_H
