@@ -2,7 +2,7 @@
 
 Character::Character(int initialHealth, int initialShield, const Weapon& initialWeapon, const std::vector<Capacity>& initialCapacity, const CharacterType& initialCharacter, const std::string initialName) :
     health(initialHealth), shield(initialShield), weapon(initialWeapon), capacities(initialCapacity), characterType(initialCharacter),
-     canPlay(true), incapacityCounter(0), name(initialName)
+    incapacityCounter(0), name(initialName)
 {
 }
 // Implémentation du destructeur (si nécessaire)
@@ -13,12 +13,11 @@ Character::~Character() {
 // Constructeur de copie
 Character::Character(const Character& other)
     : health(other.health), shield(other.shield),
-    canPlay(other.canPlay), incapacityCounter(other.incapacityCounter), weapon(other.weapon),
+    incapacityCounter(other.incapacityCounter), weapon(other.weapon),
     capacities(other.capacities), characterType(other.characterType), rng(other.rng), name(other.name) {}
 // Constructeur de déplacement
 Character::Character(Character&& other) noexcept
     : health(std::move(other.health)), shield(std::move(other.shield)),
-     canPlay(std::move(other.canPlay)),
     incapacityCounter(std::move(other.incapacityCounter)), weapon(std::move(other.weapon)),
     capacities(std::move(other.capacities)), characterType(std::move(other.characterType)),
     rng(std::move(other.rng)), name(std::move(other.name)){}
@@ -28,7 +27,6 @@ Character& Character::operator=(const Character& other) {
     if (this != &other) {
         health = other.health;
         shield = other.shield;
-        canPlay = other.canPlay;
         incapacityCounter = other.incapacityCounter;
         weapon = other.weapon;
         capacities = other.capacities;
@@ -44,7 +42,6 @@ Character& Character::operator=(Character&& other) noexcept {
     if (this != &other) {
         health = std::move(other.health);
         shield = std::move(other.shield);
-        canPlay = std::move(other.canPlay);
         incapacityCounter = std::move(other.incapacityCounter);
         weapon = std::move(other.weapon);
         capacities = std::move(other.capacities);
@@ -111,10 +108,11 @@ int Character::getShield() const
 /// Return if the caractere can play
 /// </summary>
 /// <returns></returns>
-bool Character::getCanPlay() 
+bool Character::getCanPlay() const
 {
-    canPlay = incapacityCounter <= 0;
-    return canPlay;
+   /* canPlay = incapacityCounter <= 0;
+    return canPlay;*/
+    return incapacityCounter <= 0;
 }
 /// <summary>
 /// Used for minus 1 the incapacity counter
@@ -124,13 +122,12 @@ void Character::UpdateIncapacity()
     incapacityCounter = incapacityCounter - 1 < 0 ? 0 : incapacityCounter - 1;
 }
 /// <summary>
-/// Update canPlay value, and for how many time (used here to set it to false)
+/// Update incapacityCounter value
 /// </summary>
-/// <param name="canPlayValue">Value</param>
 /// <param name="counter">How many time</param>
-void Character::setCanPlay(bool canPlayValue, int counter) 
+void Character::setIncapacity(int counter) 
 {
-    canPlay = canPlayValue;
+    //canPlay = canPlayValue;
     incapacityCounter = counter;
 }
 /// <summary>
@@ -152,7 +149,7 @@ void Character::displayAllInfo() const
 void Character::displayInfo() const
 {    
     std::cout <<"---" << name << std::endl;
-    std::cout << "Health: " << health << ", Shield: " << shield << ", CanPlay: " << (canPlay ? "true" : "false") << ", Type: " << EnumClass::characterTypeToString(characterType) << std::endl;
+    std::cout << "Health: " << health << ", Shield: " << shield << ", CanPlayNexTime: " << (getCanPlay() ? "true" : "false") << ", Type: " << EnumClass::characterTypeToString(characterType) << std::endl;
   /*  std::cout << "Time to wait before the next Capacity: " << capacityCounter << std::endl;*/
 }
 /// <summary>
@@ -248,4 +245,18 @@ int Character::getCapacityCounter(int index) const
 std::string Character::GetName() const
 { 
     return name;
+}
+int  Character::doCapacity(std::unique_ptr<Character>& toChara) 
+{
+    switch (capacities[0].getType()) 
+    {
+        case CapacityType::Charge:
+            return weapon.getDamage();
+        case CapacityType::Stun:
+            toChara->setIncapacity(1);
+            return 0;
+            // Ajoutez d'autres cas au besoin
+        default:
+            return 0;
+    }
 }

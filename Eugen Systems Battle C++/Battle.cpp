@@ -1,28 +1,28 @@
 #include "Battle.h"
 
-//Battle::Battle(Character* orc, Character* knight) : orc(orc), knight(knight) {}
-// Tableau associatif pour stocker les informations sur les armes
-const std::unordered_map<WeaponType, Struct::WeaponInfo> weaponInfoMap =
-{
-    {WeaponType::Sword, Struct::WeaponInfo(5)},  // Valeur d'attaque pour l'épée
-    {WeaponType::Axe, Struct::WeaponInfo(8)},    // Valeur d'attaque pour la hache
-    // Ajoutez au besoin
-};
-const std::unordered_map<int, Struct::CharacterInfo> characterInfoMap =
-{
-    {0, Struct::CharacterInfo(20,50,CharacterType::Knight, WeaponType::Sword,{CapacityType::Charge},"Dark Knight")},
-    {1, Struct::CharacterInfo(60,0,CharacterType::Orc, WeaponType::Axe,{CapacityType::Stun},"Azog")},
-    // Ajoutez au besoin
-};
-const std::unordered_map<CapacityType, Struct::CapacityInfo> capacityInfoMap =
-{
-    {CapacityType::Charge, Struct::CapacityInfo(60,3)},
-    {CapacityType::Stun, Struct::CapacityInfo(20,5)},
-    // Ajoutez au besoin
-};
 Battle::Battle(): manualInit(false) {}
 void Battle::Initialisation()
 {
+    // Tableau associatif pour stocker les informations 
+    const std::unordered_map<WeaponType, Struct::WeaponInfo> weaponInfoMap =
+    {
+        {WeaponType::Sword, Struct::WeaponInfo(5)},  // Valeur d'attaque pour l'épée
+        {WeaponType::Axe, Struct::WeaponInfo(8)},    // Valeur d'attaque pour la hache
+        // Ajoutez au besoin
+    };
+    const std::unordered_map<int, Struct::CharacterInfo> characterInfoMap =
+    {
+        {0, Struct::CharacterInfo(20,50,CharacterType::Knight, WeaponType::Sword,{CapacityType::Charge},"Dark Knight")},
+        {1, Struct::CharacterInfo(60,0,CharacterType::Orc, WeaponType::Axe,{CapacityType::Stun},"Azog")},
+        // Ajoutez au besoin
+    };
+    const std::unordered_map<CapacityType, Struct::CapacityInfo> capacityInfoMap =
+    {
+        {CapacityType::Charge, Struct::CapacityInfo(60,3)},
+        {CapacityType::Stun, Struct::CapacityInfo(20,5)},
+        // Ajoutez au besoin
+    };
+
     char keyPressed;
     std::cout << "Welcome to the fight arena simulator !";
     std::cout << "\n Do you want to set characteres manualy ? If not, one Orc and one Knight will fights. Yes (y) / No (n)" << std::endl;;
@@ -41,9 +41,18 @@ void Battle::Initialisation()
     }
     if (manualInit)
     {
-        std::cout << "Enter number of fighter : " << std::endl;
-        int nbChara;
-        std::cin >> nbChara;       
+        int nbChara = -1;
+        while (nbChara < 2)
+        {
+            std::cout << "Enter number of fighter : " << std::endl;
+            std::cin >> nbChara;
+            if (nbChara < 2)
+            {
+                std::cout << "Needed minimum of two characters to start a fight " << std::endl;
+            }
+        }
+        
+             
         for (int i = 0; i < nbChara; ++i)
         {
             std::string tempName;
@@ -173,7 +182,7 @@ void Battle::Initialisation()
     else
     {
         std::cout << "Automatic characters creations" << std::endl;
-        for (int i = 0; i < characterInfoMap.size(); i++)
+        for (size_t  i = 0; i < characterInfoMap.size(); i++)
         {
             auto CharactereInfoIterator = characterInfoMap.find(i);
             Struct::CharacterInfo charaInfo = CharactereInfoIterator->second;
@@ -193,6 +202,7 @@ void Battle::Initialisation()
         }
     }
 }
+
 /// <summary>
 /// Lanch the battle
 /// </summary>
@@ -243,121 +253,38 @@ void Battle::startBattle()
     bool isOneMoreThanOneUnitAlive = true;
     while (isOneMoreThanOneUnitAlive)
     {
-        // Pause
-        std::cout << "\n=====>>Press Enter to continue<=====" << std::endl;
-        std::cin.ignore();
-
-        std::cout << "\TURN : " << nbTour << std::endl;
-        std::vector<int> damageCollection;
-        std::vector<int> cibleCollection;
-        std::vector<int> listAttaquants;
-        // Déterminer les cibles pour chaque personnage
-        for (int y = 0; y < characteres.size(); y++)
-        {
-            if (characteres[y]->isAlive())
-            {
-                if (autoTarget)
-                {
-                    // Trouver une cible vivante aléatoire (différente de l'attaquant)
-                    int indexCible = y;
-                    while (indexCible == y || !characteres[indexCible]->isAlive())
-                    {
-                        indexCible = rng.getRandomValueBetween(characteres.size());
-                    }
-                    listAttaquants.push_back(y);
-                    cibleCollection.push_back(indexCible);
-                    damageCollection.push_back(capacityState(characteres[y], characteres[indexCible], autoCapacity));
-                }
-                else
-                {
-                    std::cout << "Select target for " << characteres[y]->GetName() << "." << std::endl;
-                    std::cout << "Targets : " << std::endl;
-              
-                    int indexCible = -1;
-                    while (indexCible == -1 || indexCible == y)
-                    {
-                        std::vector<int> listTargets;
-                        for (int z = 0; z < characteres.size(); ++z)
-                        {
-                            if (characteres[z]->isAlive() && z != y)
-                            {
-                                std::cout <<"Name: "<< characteres[z]->GetName() <<" Type: " << EnumClass::characterTypeToString(characteres[z]->getCharacterType()) << " : " << z << "." << std::endl;
-                                listTargets.push_back(z);
-                            }
-                        }
-                        std::cin >> indexCible;
-                        auto it = std::find(listTargets.begin(), listTargets.end(), indexCible);
-                        if (it == listTargets.end())
-                        {
-                            indexCible = -1;
-                        }
-                    }                   
-                    listAttaquants.push_back(y);
-                    cibleCollection.push_back(indexCible);
-                    damageCollection.push_back(capacityState(characteres[y], characteres[indexCible], autoCapacity));
-                }                 
-            }
-            else
-            {
-                cibleCollection.push_back(0);
-                damageCollection.push_back(0);
-            }           
-        }
-        // Appliquer les dégâts aux cibles
-        for (int y = 0; y < characteres.size(); y++)
-        {
-            auto it = std::find(listAttaquants.begin(), listAttaquants.end(), y);
-            if (it != listAttaquants.end())
-            {
-                attackState(characteres[y], characteres[cibleCollection[y]], damageCollection[y]);
-            }
-        }   
-        // Afficher les informations après chaque tour
-        for (int j = 0; j < characteres.size(); j++)
-        {
-            characteres[j]->displayInfo();
-        }
-        // Vider le tampon d'entrée
-        //std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        PerformTurn(nbTour, autoCapacity, autoTarget, rng);      
         nbTour++;
-
         int nbCharaAlive = std::count_if(characteres.begin(), characteres.end(), [](const auto& character) {
             return character->isAlive();
             });
-
         isOneMoreThanOneUnitAlive = nbCharaAlive > 1;
-       //Apply fonctionality
-       if (shieldRegen && isOneMoreThanOneUnitAlive)
-       {
-           for (int j = 0; j < characteres.size(); j++)
-           {
-               if (characteres[j]->getCharacterType() == CharacterType::Knight)
-               {
-                   characteres[j]->regenShield(regenValue);
-                   std::cout << characteres[j]->GetName() <<"'s Shield Regenerate by " << regenValue << ". Current shield Value: " << characteres[j]->getShield() << ".\n" << std::endl;
-               }             
-           }
-       }
-    }
-    for (int y = 0; y < characteres.size(); y++)
-    {
-        if (characteres[y]->isAlive())
+        //Apply fonctionality
+        if (shieldRegen && isOneMoreThanOneUnitAlive)
         {
-            std::cout << "\n" << characteres[y]->GetName() << " WIN !" << std::endl;
+            for (size_t j = 0; j < characteres.size(); j++)
+            {
+                if (characteres[j]->getCharacterType() == CharacterType::Knight)
+                {
+                    characteres[j]->regenShield(regenValue);
+                    std::cout << characteres[j]->GetName() << "'s Shield Regenerate by " << regenValue << ". Current shield Value: " << characteres[j]->getShield() << ".\n" << std::endl;
+                }
+            }
         }
     }
-    // Display the winner
-   /* if (orc->isAlive()) 
+    bool findAlive = false;
+    for (size_t  y = 0; y < characteres.size(); y++)
     {
-        std::cout << "\nOrc wins the battle! That a normal day..." << std::endl;       
+        if (characteres[y]->isAlive())
+        { // Display the winner
+            std::cout << "\n" << characteres[y]->GetName() << " WIN !" << std::endl;
+            findAlive = true;
+        }
     }
-    else if (knight->isAlive())
+    if (!findAlive)
     {
-        std::cout << "\nKnight wins the battle! That an impossible day..." << std::endl;
+        std::cout << "\n" <<" It's a draw !" << std::endl;
     }
-    else {
-        std::cout << "\nIt's a draw! That a lucky day..." << std::endl;
-    }*/
     //end
     std::cout << "\n END" << std::endl;
     std::cout << "\n Do you play want another games ? y(yes) " << std::endl;;
@@ -373,32 +300,94 @@ void Battle::startBattle()
     std::cin.ignore();
 
 }
+/// <summary>
+/// Do a turn
+/// </summary>
+/// <param name="nbTour">actual turn</param>
+/// <param name="autoCapacity"></param>
+/// <param name="autoTarget"></param>
+/// <param name="rng"></param>
+void Battle::PerformTurn(int nbTour, bool autoCapacity, bool autoTarget, RandomNumberGenerator rng)
+{
+    // Pause
+    std::cout << "\n=====>>Press Enter to continue<=====" << std::endl;
+    std::cin.ignore();
+    std::cout << "TURN : " << nbTour << std::endl;
+    std::vector<int> damageCollection;
+    std::vector<int> cibleCollection;
+    std::vector<int> listAttaquants;
+    // Déterminer les cibles pour chaque personnage
+    for (size_t y = 0; y < characteres.size(); y++)
+    {
+        if (characteres[y]->isAlive())
+        {
+            if (autoTarget)
+            {
+                // Trouver une cible vivante aléatoire (différente de l'attaquant)
+                int indexCible = y;
+                while (indexCible == y || !characteres[indexCible]->isAlive())
+                {
+                    indexCible = rng.getRandomValueBetween(characteres.size());
+                }
+                listAttaquants.push_back(y);
+                cibleCollection.push_back(indexCible);
+                damageCollection.push_back(capacityState(characteres[y], characteres[indexCible], autoCapacity));
+            }
+            else
+            {
+                std::cout << "Select target for " << characteres[y]->GetName() << "." << std::endl;
+                std::cout << "Targets : " << std::endl;
+
+                int indexCible = -1;
+                while (indexCible == -1 || indexCible == y)
+                {
+                    std::vector<int> listTargets;
+                    for (size_t z = 0; z < characteres.size(); ++z)
+                    {
+                        if (characteres[z]->isAlive() && z != y)
+                        {
+                            std::cout << "Name: " << characteres[z]->GetName() << " Type: " << EnumClass::characterTypeToString(characteres[z]->getCharacterType()) << " : " << z << "." << std::endl;
+                            listTargets.push_back(z);
+                        }
+                    }
+                    std::cin >> indexCible;
+                    auto it = std::find(listTargets.begin(), listTargets.end(), indexCible);
+                    if (it == listTargets.end())
+                    {
+                        indexCible = -1;
+                    }
+                }
+                listAttaquants.push_back(y);
+                cibleCollection.push_back(indexCible);
+                damageCollection.push_back(capacityState(characteres[y], characteres[indexCible], autoCapacity));
+            }
+        }
+        else
+        {
+            cibleCollection.push_back(0);
+            damageCollection.push_back(0);
+        }
+    }
+    // Appliquer les dégâts aux cibles
+    for (size_t y = 0; y < characteres.size(); y++)
+    {
+        auto it = std::find(listAttaquants.begin(), listAttaquants.end(), y);
+        if (it != listAttaquants.end())
+        {
+            attackState(characteres[y], characteres[cibleCollection[y]], damageCollection[y]);
+        }
+    }
+    // Afficher les informations après chaque tour
+    for (size_t j = 0; j < characteres.size(); j++)
+    {
+        characteres[j]->displayInfo();
+    }
+}
 void Battle::reset()
 {
     characteres.clear();
 }
-/// <summary>
-/// Apply capacity
-/// </summary>
-/// <param name="fromChara">Character who attacks</param>
-/// <param name="toChara">Target character</param>
-/// <returns>Damage value of the capacity</returns>
-int Battle::doCapacity(std::unique_ptr<Character>& fromChara, std::unique_ptr<Character>& toChara)
-{
-    switch (fromChara->getCapacities()[0].getType())
-    {
-        case CapacityType::Charge:
-            //std::cout << "Charge" << std::endl;
-            return fromChara->getWeapon().getDamage();
-        case CapacityType::Stun:
-            //std::cout << "Stun" << std::endl;
-            toChara->setCanPlay(false, 1);
-            return 0;
-            // Ajoutez d'autres cas au besoin
-        default:
-            return 0;
-    }
-}
+
 /// <summary>
 /// Try to lanch the capacity
 /// </summary>
@@ -409,7 +398,7 @@ int Battle::doCapacity(std::unique_ptr<Character>& fromChara, std::unique_ptr<Ch
 int Battle::capacityState(std::unique_ptr<Character>& fromChara, std::unique_ptr<Character>& toChara, bool autoCapacity)
 {
     // une seule tentative d'envoie de capacité par tour, si deux capacité peuvent se declenché le meme tour, l'une serra envoyé et l'autre le tour suivant
-    for (int i = 0; i < fromChara->getCapacities().size(); i++)
+    for (size_t  i = 0; i < fromChara->getCapacities().size(); i++)
     {
         if (fromChara->getCapacityCounter(i) == 0)
         {
@@ -422,22 +411,18 @@ int Battle::capacityState(std::unique_ptr<Character>& fromChara, std::unique_ptr
                 // Décider d'une action en fonction de la touche
                 switch (keyPressed)
                 {
-                case 'a':
-                case 'A':
-                    if (fromChara->CanPerformCapacity(i))
-                    {
-                     /*   std::cout << EnumClass::characterTypeToString(fromChara->getCharacterType()) << "'s Capacity Perfomed! (" << EnumClass::capacityTypeToString(fromChara->getCapacities()[i].getType()) << ")" << std::endl;*/
-                        std::cout << fromChara->GetName() << "'s Capacity Perfomed! (" << EnumClass::capacityTypeToString(fromChara->getCapacities()[i].getType()) <<"=>"<< toChara->GetName() << ")" << std::endl;
-
-                        return doCapacity(fromChara, toChara);
-                    }
-                    else
-                    {
-                        std::cout << fromChara->GetName() << "'s Capacity Failed... (" << EnumClass::capacityTypeToString(fromChara->getCapacities()[i].getType()) << "=>" << toChara->GetName() << ")" << std::endl;
-                        //return 0;
-                    }
-               /* default:
-                    return 0;*/
+                    case 'a':
+                    case 'A':
+                        if (fromChara->CanPerformCapacity(i))
+                        {
+                            std::cout << fromChara->GetName() << "'s Capacity Perfomed! (" << EnumClass::capacityTypeToString(fromChara->getCapacities()[i].getType()) <<"=>"<< toChara->GetName() << ")" << std::endl;
+                            return fromChara->doCapacity(toChara);
+                        }
+                        else
+                        {
+                            std::cout << fromChara->GetName() << "'s Capacity Failed... (" << EnumClass::capacityTypeToString(fromChara->getCapacities()[i].getType()) << "=>" << toChara->GetName() << ")" << std::endl;
+                            return 0;
+                        }
                 }
             }
             else
@@ -445,7 +430,7 @@ int Battle::capacityState(std::unique_ptr<Character>& fromChara, std::unique_ptr
                 if (fromChara->CanPerformCapacity(i))
                 {
                     std::cout << fromChara->GetName() << "'s Capacity Perfomed! (" << EnumClass::capacityTypeToString(fromChara->getCapacities()[i].getType()) << "=>" << toChara->GetName() << ")" << std::endl;
-                    return doCapacity(fromChara, toChara);
+                    return fromChara->doCapacity(toChara);
                 }
                 else
                 {
@@ -475,13 +460,11 @@ void Battle::attackState(std::unique_ptr<Character>& fromChara, std::unique_ptr<
         //attacks
         currentDamage += fromChara->performAttack();
         toChara->takeDamage(currentDamage);
-     /*   std::cout << EnumClass::characterTypeToString(fromChara->getCharacterType()) << " attacks " << EnumClass::characterTypeToString(toChara->getCharacterType()) << " for " << currentDamage << " damage." << std::endl;*/
         std::cout << fromChara->GetName() << " attack " << toChara->GetName() << " for " << currentDamage << " damage." << std::endl;
     }
     else
-    
-        std::cout << fromChara->GetName() << " can't attacks " << toChara->GetName() << ", wait for " << fromChara->getIncapacityCounter() << " turn(s)." << std::endl; {
-       /* std::cout << EnumClass::characterTypeToString(fromChara->getCharacterType()) << " can't attacks "<< EnumClass::characterTypeToString(toChara->getCharacterType()) << ", wait for " << fromChara->getIncapacityCounter() << " turn(s)." << std::endl;*/
+    {
+        std::cout << fromChara->GetName() << " can't attacks " << toChara->GetName() << ", wait for " << fromChara->getIncapacityCounter() << " turn(s)." << std::endl;    
         fromChara->UpdateIncapacity();
     }
 }

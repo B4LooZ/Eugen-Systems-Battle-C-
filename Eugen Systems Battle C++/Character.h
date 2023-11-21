@@ -8,9 +8,7 @@ class Character
 {
     protected:
         int health;
-        int shield;      
-        //int capacityCounter;
-        bool canPlay;
+        int shield;   
         int incapacityCounter;
         Weapon weapon;
         std::vector<Capacity> capacities;
@@ -35,9 +33,9 @@ class Character
         void regenShield(int regenValue);
         int getHealth() const;
         int getShield() const;
-        bool getCanPlay();  
+        bool getCanPlay()const;
         void UpdateIncapacity();
-        void setCanPlay(bool canPlay, int counter);  
+        void setIncapacity(int counter);
         const Weapon& getWeapon() const;
         void setWeapon(const Weapon& weapon);
         void displayInfo() const;
@@ -50,5 +48,6 @@ class Character
         int getCapacityCounter(int index) const;
         void UpdateCapacityCounter(int index);
         std::string GetName() const;
+        int doCapacity(std::unique_ptr<Character>& toChara);
 };
 
